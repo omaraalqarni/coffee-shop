@@ -1,3 +1,5 @@
+from email.mime import audio
+from errno import EKEYEXPIRED
 import json
 from lib2to3.pytree import Node
 from re import I
@@ -102,22 +104,83 @@ def check_permissions(permission, payload):
     @INPUTS
         token: a json web token (string)
 
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
-    return the decoded payload
+    ✅it should be an Auth0 token with key id (kid)
+    ✅it should verify the token using Auth0 /.well-known/jwks.json
+    ✅it should decode the payload from the token
+    ✅it should validate the claims
+    ✅return the decoded payload
 
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 
 
 def verify_decode_jwt(token):
-    raise Exception('Not Implemented')
+    #Get the public key
+    jsonURL = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
+    jwks = json.loads(jsonURL.read())
+
+    #Get header data
+    unverifiedHeader = jwt.get_unverified_header(token)
+
+    rsaKey = {}
+    #check if key 'kid' in the header:
+    if 'kid' not in unverifiedHeader:
+        raise AuthError({
+            'code':'invalid header',
+            'description': 'Authorization unverified',
+        },401)
+
+    for key in jwks['keys']:
+        if key['kid'] == unverifiedHeader['kid']:
+            #load rsaKEy with .well-known jwks keys
+            rsaKey = {
+                'kty': key['kty'],
+                'kid': key['kid'],
+                'use': key['use'],
+                'n': key['n'],
+                'e': key['e']
+            }
+
+    #Validation:
+    if rsaKey:
+        try:
+            payload = jwt.decode(
+                token,
+                rsaKey,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer='https://' + AUTH0_DOMAIN + '/'
+            )
+            return payload
+        #validate token expiry
+        except jwt.ExpiredSignatureError:
+            raise AuthError({
+                'code': 'token_expired',
+                'description':'Token has expired its time',
+            }, 401)
+            #validate token claims
+        except jwt.JWTClaimsError:
+            raise AuthError({
+                'code': 'claims_invalid',
+                'description':'Incorrect claims',
+            })
+            #validate token header
+        except Exception:
+            raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Unable to parse authentication token.'
+            }, 400)
+
+    raise AuthError({
+        'code': 'invalid_header',
+        'description': 'Unable to find the appropriate key.'
+    }, 400)
+
+            
 
 
 '''
-TODO implement @requires_auth(permission) decorator method
+✅TODO implement @requires_auth(permission) decorator method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
 
