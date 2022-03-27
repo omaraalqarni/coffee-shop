@@ -1,8 +1,10 @@
+from audioop import cross
+from crypt import methods
 import os
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
 import json
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
@@ -12,7 +14,7 @@ setup_db(app)
 CORS(app)
 
 '''
-TODO uncomment the following line to initialize the datbase
+✅TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this function will add one
@@ -21,13 +23,23 @@ db_drop_and_create_all()
 
 # ROUTES
 '''
-TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
+!TODO implement endpoint
+    ✅GET /drinks
+        ✅it should be a public endpoint
+        ✅it should contain only the drink.short() data representation
+    ✅returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods='GET')
+def getDrinks():
+    drinks = Drink.query.all()
+    res = {
+        'success': True,
+        'drinks': [drinks.short() for drink in drinks],
+    }
+    return jsonify(res)
+
+
 
 
 '''
@@ -38,7 +50,10 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('drinks-detail', methods='GET')
+@requires_auth("get:drinks-detail")
+def drinksDetail():
+    return jsonify({})
 
 '''
 TODO implement endpoint
