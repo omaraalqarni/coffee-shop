@@ -1,4 +1,5 @@
 import json
+from lib2to3.pytree import Node
 from flask import request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
@@ -9,32 +10,62 @@ AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'dev'
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
+# Auth Header
 
 '''
-@TODO implement get_token_auth_header() method
+//TODO implement get_token_auth_header() method
     it should attempt to get the header from the request
         it should raise an AuthError if no header is present
     it should attempt to split bearer and the token
         it should raise an AuthError if the header is malformed
     return the token part of the header
 '''
+
+
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    auth = request.headers.get("Authorization", None)
+    if not auth:
+        raise AuthError({
+            "code": "Auth_head_missing",
+            "description": "Auth header is expected",
+        })
+    parts = auth.split()
+
+    if parts[0].lower() != "bearer":
+        raise AuthError({
+            "code": "invalid header",
+            "description": 'Authorization header must start with "Bearer"',
+        }, 401)
+    elif len(parts) == 1:
+        raise AuthError({
+            "code": "Invalid header",
+            "description": "Token not found",
+        }, 401)
+    elif len(parts) > 2:
+        raise AuthError({
+            "code": "Invalid header",
+            "description":"Auth header must be Bear Token",
+        }, 401) 
+
+    token = parts[1]
+    return token
+
 
 '''
-@TODO implement check_permissions(permission, payload) method
+TODO implement check_permissions(permission, payload) method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
         payload: decoded jwt payload
@@ -44,11 +75,14 @@ def get_token_auth_header():
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
 '''
+
+
 def check_permissions(permission, payload):
     raise Exception('Not Implemented')
 
+
 '''
-@TODO implement verify_decode_jwt(token) method
+TODO implement verify_decode_jwt(token) method
     @INPUTS
         token: a json web token (string)
 
@@ -60,11 +94,14 @@ def check_permissions(permission, payload):
 
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
+
+
 def verify_decode_jwt(token):
     raise Exception('Not Implemented')
 
+
 '''
-@TODO implement @requires_auth(permission) decorator method
+TODO implement @requires_auth(permission) decorator method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
 
@@ -73,6 +110,8 @@ def verify_decode_jwt(token):
     it should use the check_permissions method validate claims and check the requested permission
     return the decorator which passes the decoded payload to the decorated method
 '''
+
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
