@@ -1,5 +1,7 @@
 import json
 from lib2to3.pytree import Node
+from re import I
+from xml.dom.minidom import Identified
 from flask import request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
@@ -26,7 +28,7 @@ class AuthError(Exception):
 # Auth Header
 
 '''
-//TODO implement get_token_auth_header() method
+✅TODO implement get_token_auth_header() method
     it should attempt to get the header from the request
         it should raise an AuthError if no header is present
     it should attempt to split bearer and the token
@@ -58,14 +60,14 @@ def get_token_auth_header():
         raise AuthError({
             "code": "Invalid header",
             "description":"Auth header must be Bear Token",
-        }, 401) 
+        }, 401)
 
     token = parts[1]
     return token
 
 
 '''
-TODO implement check_permissions(permission, payload) method
+✅TODO implement check_permissions(permission, payload) method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
         payload: decoded jwt payload
@@ -78,11 +80,25 @@ TODO implement check_permissions(permission, payload) method
 
 
 def check_permissions(permission, payload):
-    raise Exception('Not Implemented')
+    # if permissions are not included in the payload
+    if 'permission' not in payload:
+        raise AuthError({
+            "code": "invalid_payload",
+            "description":"Permission not included in payload",
+        }, 401)
+    # if the requested permission string is not in the payload permissions array
+    if permission not in payload['permissions']:
+        raise AuthError({
+            'code': "Unauthorized",
+            'description':"Permission denied",
+        },401)
+
+    return True
+
 
 
 '''
-TODO implement verify_decode_jwt(token) method
+✅TODO implement verify_decode_jwt(token) method
     @INPUTS
         token: a json web token (string)
 
