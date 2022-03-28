@@ -61,12 +61,12 @@ def drinksDetail(payload):
     })
 
 '''
-!TODO implement endpoint
-    POST /drinks
-        it should create a new row in the drinks table
-        it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
+✅TODO implement endpoint
+    ✅POST /drinks
+        ✅it should create a new row in the drinks table
+        ✅it should require the 'post:drinks' permission
+        ✅it should contain the drink.long() data representation
+    ✅returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
 #drink row in models.py is as the following: Drink(title:"", recipe:"[{name, color, parts}]") and then insert
@@ -84,17 +84,45 @@ def postDrinks(payload):
 
 
 '''
-TODO implement endpoint
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
+✅TODO implement endpoint
+    ✅PATCH /drinks/<id>
+        ✅where <id> is the existing model id
+        ✅it should respond with a 404 error if <id> is not found
+        ✅it should update the corresponding row for <id>
+        ✅it should require the 'patch:drinks' permission
+        ✅it should contain the drink.long() data representation
+    ✅returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<id>',methods=['PATCH'])
+@requires_auth('patch:drinks')
+def updateDrinks(payload, id):
+    drink = Drink.query.get(id)
+    if not drink:
+        abort(404)
+    
+    body = request.get_json()
+    title = body.get('title',None)
+    recipe = body.get('recipe',None)
 
+    if title:
+        drink.title = title
+    if recipe:
+        for ingredient in recipe:
+            name = ingredient.get('name', None)
+            color = ingredient.get('color', None)
+            parts = ingredient.get('parts', None)
+            if not name or color or parts:
+                abort(400)
+        drink.recipe = json.dumps(recipe)
+    
+    drink.update()
+    drinks = list(map(Drink.long, Drink.query.all()))
+
+    return jsonify({
+        'success': True,
+        'drinks': drinks
+    })
 
 '''
 TODO implement endpoint
