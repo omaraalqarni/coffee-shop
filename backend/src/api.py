@@ -32,7 +32,9 @@ db_drop_and_create_all()
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     drinks = list(map(Drink.short, Drink.query.all()))
-    return jsonify({
+    if dinks is None:
+        abort(404)
+    return jsonify ({
         'success': True,
         'drinks': drinks,
     })
@@ -48,9 +50,9 @@ def get_drinks():
 '''
 
 
-@app.route('drinks-detail', methods=['GET'])
+@app.route('/drinks-detail', methods=['GET'])
 @requires_auth("get:drinks-detail")
-def drinks_detail(payload):
+def drinks_detail(token):
     drinks = list(map(Drink.long, Drink.query.all()))
     if drinks in None:
         abort(404)
@@ -74,7 +76,7 @@ def drinks_detail(payload):
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_drinks(payload):
+def create_drinks(token):
     new_drink_data = json.loads(request.data.decode('utf-8'))
     new_drink = Drink(title=new_drink_data['title'], recipe=json.dumps(
         new_drink_data['recipe']))
@@ -102,7 +104,7 @@ def create_drinks(payload):
 '''
 
 
-@app.route('/drinks/<id>', methods=['PATCH'])
+@app.route('/drinks/<id>/', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def update_drinks(payload, id):
     drink = Drink.query.get(id)
@@ -149,7 +151,7 @@ def update_drinks(payload, id):
 
 @app.route('/drinks/<id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def deleteDrinks(payload, id):
+def deleteDrinks(token, id):
     drink = Drink.query.get(id)
     if drink is None:
         abort(404)
@@ -192,7 +194,7 @@ def unprocessable(error):
 
 
 '''
-TODO implement error handler for 404
+✅TODO implement error handler for 404
     error handler should conform to general task above
 '''
 #errors: ✅400, ✅404, ✅422, ✅500
@@ -205,7 +207,15 @@ def badRequest(error):
         "message": "Bad request"
     }), 400
 
-@app.error_handler(404)
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({
+        "success": False,
+        "error": 403,
+        "message": "Forbidden request"
+    }), 403 
+
+@app.errorhandler(404)
 def not_found(error):
     return jsonify({
         "success": False,

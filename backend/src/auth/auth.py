@@ -6,7 +6,7 @@ from urllib.request import urlopen
 
 
 
-AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
+AUTH0_DOMAIN = 'loynv2vi.us.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'dev'
 
@@ -41,7 +41,7 @@ def get_token_auth_header():
         raise AuthError({
             "code": "Auth_head_missing",
             "description": "Auth header is expected",
-        })
+        }, 401)
     parts = auth.split()
 
     if parts[0].lower() != "bearer":
