@@ -8,7 +8,7 @@ from sqlalchemy import exc
 import json
 from flask_cors import CORS, cross_origin
 
-from .database.models import db_drop_and_create_all, setup_db, Drink
+from .database.models import db_drop_and_create_all, setup_db, Drink, db
 from .auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
@@ -134,6 +134,25 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def deleteDrinks(payload, id):
+    drink = Drink.query.get(id)
+
+    if drink is None:
+        abort(404)
+    try:
+        drink.delete()
+        return jsonify({
+            'success': True,
+            'delete': id
+        })
+    except:
+        db.session.rollback()
+        abort(500)
+
+    
+
 
 
 # Error Handling
@@ -171,4 +190,5 @@ TODO implement error handler for 404
 '''
 TODO implement error handler for AuthError
     error handler should conform to general task above
+
 '''
