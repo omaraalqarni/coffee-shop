@@ -1,6 +1,8 @@
 from audioop import cross
 from crypt import methods
 import os
+from socket import MSG_ETAG
+from sre_constants import SUCCESS
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
 import json
@@ -30,30 +32,33 @@ db_drop_and_create_all()
     ✅returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks', methods='GET')
+@app.route('/drinks', methods=['GET'])
 def getDrinks():
-    drinks = Drink.query.all()
-    res = {
+    drinks = list(map(Drink.short, Drink.query.all()))
+    return jsonify({
         'success': True,
-        'drinks': [drinks.short() for drink in drinks],
-    }
-    return jsonify(res)
+        'drinks': drinks,
+    })
 
 
 
 
 '''
-TODO implement endpoint
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
+!TODO implement endpoint
+    ✅GET /drinks-detail
+        ✅it should require the 'get:drinks-detail' permission
+        ✅it should contain the drink.long() data representation
+    ✅returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-@app.route('drinks-detail', methods='GET')
+@app.route('drinks-detail', methods=['GET'])
 @requires_auth("get:drinks-detail")
-def drinksDetail():
-    return jsonify({})
+def drinksDetail(payload):
+    drinks = list(map(Drink.long, Drink.query.all()))
+    return jsonify({
+        'success': True,
+        'drinks': drinks,
+    })
 
 '''
 TODO implement endpoint
@@ -64,7 +69,12 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+#drink row in models.py is as the following: Drink(title:"", recipe:"") and then insert
+@app.route('/drinks', methods='POST')
+@requires_auth('post:drinks')
+def postDrinks(token):
 
+    pass
 
 '''
 TODO implement endpoint
