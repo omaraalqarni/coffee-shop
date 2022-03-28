@@ -61,7 +61,7 @@ def drinksDetail(payload):
     })
 
 '''
-TODO implement endpoint
+!TODO implement endpoint
     POST /drinks
         it should create a new row in the drinks table
         it should require the 'post:drinks' permission
@@ -69,12 +69,19 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-#drink row in models.py is as the following: Drink(title:"", recipe:"") and then insert
-@app.route('/drinks', methods='POST')
+#drink row in models.py is as the following: Drink(title:"", recipe:"[{name, color, parts}]") and then insert
+@app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def postDrinks(token):
+def postDrinks(payload):
+    new_drink_data = json.loads(request.data.decode('utf-8'))
+    new_drink = Drink(title=new_drink_data['title'], recipe=json.dumps(new_drink_data['recipe']))
+    Drink.insert(new_drink)
+    drinks = list(map(Drink.long, Drink.query.all()))
+    return jsonify({
+        'success': True,
+        'drinks': drinks
+    })
 
-    pass
 
 '''
 TODO implement endpoint
