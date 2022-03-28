@@ -1,13 +1,9 @@
-from email.mime import audio
-from errno import EKEYEXPIRED
 import json
-from lib2to3.pytree import Node
-from re import I
-from xml.dom.minidom import Identified
 from flask import request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+
 
 
 AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
